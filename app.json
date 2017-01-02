@@ -9,5 +9,11 @@
     "locations"
   ],
   "website": "http://ftcroot.com/",
-  "repository": "https://github.com/TheReddKing/FTCRoot"
+  "repository": "https://github.com/TheReddKing/FTCRoot",
+  "ENV": [
+    "MAPS_API_KEY": {
+      "description": "Maps API key so your front page works.",
+      "value": "AIzaSyDJRN6Cg9T-qyFWxc4dZo8QUC6HbV6rmGk"
+    }
+  ]
 }
