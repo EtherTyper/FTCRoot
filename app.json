@@ -9,5 +9,8 @@
     "locations"
   ],
   "website": "http://ftcroot.com/",
-  "repository": "https://github.com/TheReddKing/FTCRoot"
+  "repository": "https://github.com/TheReddKing/FTCRoot",
+  "scripts": {
+    "postdeploy": "rails db:migrate"
+  }
 }
