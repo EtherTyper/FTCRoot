@@ -1,82 +1,190 @@
-<% content_for :title do %><%= @team.name %> (<%=@team.id %>) -- FTCRoot<%end %>
+<% content_for :title do %><%= @team.name %>
+(<%=@team.id %>) -- FTCRoot<%end %>
 <p id="notice"><%= notice %></p>
-<center>
-<h2>
-    <%= @team.name %>
-</h2>
-<br/>
-<p>
-    <strong>Team ID:</strong>
-    <%= @team.id %>
-</p>
 
+
+<%= render :partial => "plain" %>
+
+<%= render "shared/eventresults" %>
+<%#= link_to("Test","#",:class=>"score_popup_open") %>
+<% if @competitions.length > 0 %>
 <p>
-    <strong>Location:</strong>
-    <%= @team.location %>
-</p>
-</center>
-<% if @competitions != [] %>
-<p> Note: <i class="fa fa-trophy" aria-hidden="true"></i>=WIN, empty for LOSS</p>
-<table class="pure-table pure-table-horizontal">
+    Note:
+    <i class="fa fa-trophy" aria-hidden="true"></i>=WIN, empty for LOSS</p>
+
+<% @competitions.each_with_index do |meet,i| %>
+    <div class="card">
+      <div class="card-container">
+        <center><h2><b><%= link_to(meet[:meet].name,meet[:meet]) %></b></h2>
+        <h4><%= meet[:meet].competitiontype %></h4>
+        <p><%= meet[:meet].date %></p>
+    <% if meet[:data].length > 0 %>
+        <p>Record (W-T-L): <%= meet[:wins] %>-<%= meet[:draws] %>-<%= meet[:data].length - meet[:wins] - meet[:draws] %>
+        <br/>Qual Rank: <%= meet[:rank] %> out of <%= meet[:rank_all] %>
+        <br/>
+        <!-- <%= @avgData[i][1]%> (Total before penalties), <%= @avgData[i][2]%> (Auton),  <%= @avgData[i][3]%> (Tele),  <%= @avgData[i][4]%> (End) -->
+    </center>
+    <% if meet[:data][0][:owndetails].length > 0 %>
+        <center>
+        Average scores: </p>
+        <div style="display:inline-block;">
+            <table class="pure-table" style="max-width:300px;height:300px;">
+              <tr>
+                <th>Total before penalties</th>
+                  <td><%= @avgData[i][1]%></td>
+              </tr>
+                    <tr>
+                <th>Autonomous</th>
+                  <td><%= @avgData[i][2]%></td>
+              </tr>
+                    <tr>
+                <th>Teleop</th>
+                  <td><%= @avgData[i][3]%></td>
+              </tr>
+                    <tr>
+                <th>End</th>
+                  <td><%= @avgData[i][4]%></td>
+              </tr>
+          </table>
+      </div>
+          <div style="display:inline-block;">
+              <%= pie_chart [["Autonomous (#{@avgData[i][2]})",@avgData[i][2]], ["Teleop (#{@avgData[i][3]})",@avgData[i][3]], ["End Game (#{@avgData[i][4]})",@avgData[i][4]]] %>
+          </div></center>
+          <% end %>
+    <% end %>
+</div>
+<table class="pure-table pure-table-horizontal centered">
     <thead>
         <tr>
-            <th>Event Name</th>
-            <th>Q_name</th>
+            <th colspan="2" style="text-align:right">Match</th>
             <th>Score</th>
+            <th style="text-align:left">Opp Score</th>
             <th>Result</th>
             <!-- <th colspan="3"></th> -->
         </tr>
     </thead>
     <tbody>
-    <% wins = 0 %>
-    <% draws = 0 %>
-        <% @competitions.each do |event| %>
-        <tr>
-            <td><%= link_to(event.league_meet.name,event.league_meet) %></td>
-            <td><%= event.name %></td>
-            <% if @team.id == event.red1 or @team.id == event.red2 %>
-            <td><%= event.redscore %></td>
-            <% if event.redscore > event.bluescore %>
-            <td><i class="fa fa-trophy" aria-hidden="true"></i></td>
-            <% wins += 1 %>
-            <% elsif event.redscore == event.bluescore %>
-            <% draws += 1 %>
-            <td>DRAW</td>
-            <%else %>
-            <td></td>
-        <% end
-            else %>
-            <td><%= event.bluescore %></td>
-            <% if event.redscore < event.bluescore %>
-            <td><i class="fa fa-trophy" aria-hidden="true"></i></td>
-            <% wins += 1 %>
-            <% elsif event.redscore == event.bluescore %>
-            <% draws += 1 %>
-            <td>DRAW</td>
-            <%else %>
-            <td></td>
-            <% end
-            end
-            %>
 
+        <% meet[:data].each do |match| %>
+        <tr>
+            <td colspan="2" style="text-align:right"><%= match[:name] %></td>
+            <% if match[:owndetails].length > 0 %>
+            <td colspan="1"><%= button_to(match[:ownscore],"#", class:"score_popup_open pure-button button-full",data:match[:owndetails]) %></td>
+        <% else %>
+            <td colspan="1"><%= match[:ownscore] %></td>
+            <% end %>
+            <td style="text-align:left">vs.
+                <%= match[:oppscore] %></td>
+
+            <% if match[:ownscore].to_i > match[:oppscore].to_i %>
+            <td>
+                <i class="fa fa-trophy" aria-hidden="true"></i>
+            </td>
+            <% elsif  match[:ownscore].to_i == match[:oppscore].to_i %>
+            <td>DRAW</td>
+            <%else %>
+            <td></td>
         </tr>
         <% end %>
+
+<%  end %>
     </tbody>
+</table>
+</div>
+<br/>
+
+<% end %>
+
+<% if false %>
+<table class="pure-table pure-table-horizontal">
     <thead>
         <tr>
-            <th>Total Matches</th>
-            <th></th>
-            <th> Wins <i class="fa fa-trophy" aria-hidden="true"></i>: <%= wins %></th>
-            <th> Losses: <%= @competitions.length - wins - draws %></th>
+            <th>Match</th>
+            <th>Result</th>
+            <th>Score</th>
+            <th>Auto</th>
+            <th>Tele</th>
+            <th>End</th>
+            <th>Pen</th>
+
+            <!-- <th colspan="3"></th> -->
         </tr>
     </thead>
+    <tbody>
+        <% @competitions.each_with_index do |meet,i| %>
+        <tr style="background-color:#dfd;">
+            <!-- <th></th> -->
+            <th colspan="7"><%= link_to(meet[:meet].name,meet[:meet]) %>
+                --
+                <%= meet[:meet].date %></th>
+        </tr>
+        <% wins = 0 %>
+        <% draws = 0 %>
+        <% meet[:data].each do |match| %>
+        <tr>
+            <td><%= match[:name] %></td>
+
+            <% if match[:ownscore].to_i > match[:oppscore].to_i %>
+            <td>
+                <b>W</b>
+            </td>
+            <td>
+                <b>[<%= match[:ownscore] %>]</b>
+                vs.
+                <%= match[:oppscore] %></td>
+            <% wins += 1 %>
+            <% elsif  match[:ownscore].to_i == match[:oppscore].to_i %>
+            <% draws += 1 %>
+            <td>T</td>
+            <td><%= match[:ownscore] %>
+                vs.
+                <%= match[:oppscore] %></td>
+        <% else %>
+            <td>L</td>
+            <td><%= match[:ownscore] %>
+                vs.
+                <b>[<%= match[:oppscore] %>]</b>
+            </td>
+            <% end %>
+
+            <% if match[:owndetails].length > 0 %>
+            <% dat = match[:owndetails].split(",") %>
+            <td><%= dat[1] %></td>
+            <td><%= dat[3] %></td>
+            <td><%= dat[4] %></td>
+            <td><%= dat[5] %></td>
+        <% else %>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <% end %>
+        </tr>
+        <% end %>
+        <% if meet[:data].length > 0 and meet[:data][0][:owndetails].length > 0 %>
+        <tr>
+            <th>Record:</th>
+            <th>
+                <%= wins %>-<%= draws %>-<%= @avgData[i][0] - wins - draws %></th>
+            <th>
+                <%= @avgData[i][1] %></th>
+            <th colspan="5">
+                = Average pre-penalty score</th>
+        </tr>
+        <% end %>
+        <% end %>
+    </tbody>
 </table>
+<%end %>
+
 <% else %>
 <table>
-<center><h5>
-    There are no competitions to show for this team.
-    If you want to help out, have your mentor send result files to <a href="mailto:help@ftcroot.com">help@ftcroot.com</a>
-</h5></center>
+    <center>
+        <h5>
+            There are no competitions to show for this team. If you want to help out, have your mentor send result files to
+            <a href="mailto:help@ftcroot.com">help@ftcroot.com</a>
+        </h5>
+    </center>
 </table>
 <% end %>
-<%= link_to 'Back', 'javascript:history.go(-1);' %>
+<%#= link_to 'Back', 'javascript:history.go(-1);' %>

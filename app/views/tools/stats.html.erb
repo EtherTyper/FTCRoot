@@ -1,0 +1,67 @@
+<% content_for :title do %>FTCRoot Global Stats<% end %>
+<h1>Global Stats</h1>
+
+<!-- <center><h1 style="color:red"> This page is temporarily unavailable due to a huge database modification </h1>
+</center> -->
+<p> Please show your support for this website by either contacting us <%= link_to("here","mailto:help@ftcroot.com",class:"pure-button nav-link button-secondary") %> <br/>
+    or tweet us/sharing this website! @ChaosMonkeyzFTC with the #FTCRoot #omgrobots </p>
+
+<p> NOTE: Only teams with DETAILED match data will be ranked. Contact us with match data to be placed in a ranking </p>
+<h2>
+    High Scorers
+</h2>
+<p>
+    If your team has a higher score, plz contact me :P
+</p>
+<p>
+    This is penalty normalized
+</p>
+
+<%= render "shared/eventresults" %>
+<div class="overflow-big">
+<center>
+    <table class="pure-table pure-table-horizontal centered">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th colspan="3" class="td-superimportant">Match</th>
+                <th colspan="6">Team</th>
+                <center>
+                    <th colspan="3">Score</th>
+                    <!-- <th class="td-meh"></th> -->
+                </center>
+            </tr>
+        </thead>
+        <% @allScores.each_with_index do |event,ind| %>
+        <tr style="border-top:2px solid gray;">
+            <td><%= ind + 1 %></td>
+            <td colspan="3"><%= link_to("#{event[:event].name} (#{event[:event].region.name})",event[:event]) %> - <%= event[:name] %>
+            <br/>
+            <%= event[:event].date %>
+            </td>
+            <% (event[:ownteam]).each do |team| %>
+            <td class="team<%= event[:owncolor] %>" colspan="<%= event[:numteams] %>" >
+                <% if Team.exists?(team) %>
+                <% tt = Team.find(team) %>
+                <%= link_to(team, tt) %>
+                <span class="teamname">(<%= tt.name %>)</span>
+            <% else %>
+                <%= team %>
+                <% end %>
+            </td>
+            <% end %>
+            <% if event[:owndetails].length > 0 %>
+            <td colspan="3"><%= button_to(event[:ownscore],"#", class:"score_popup_open pure-button button-full",data:event[:owndetails]) %></td>
+            <% else %>
+            <td colspan="3"><%= event[:ownscore] %></td>
+            <% end %>
+        </tr>
+
+        <% end %>
+    </table>
+</center>
+</div>
+<br/>
+<!-- <h2>
+    Highest Ranks
+</h2> -->

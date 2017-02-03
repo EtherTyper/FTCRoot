@@ -4,11 +4,17 @@ class TeamsController < ApplicationController
     # GET /teams
     # GET /teams.json
     def index
-        @teams = if params[:search] != nil
-                    Team.where('CAST(id as CHAR) like ? or name like ?', "#{params[:search].to_i}%", "%#{params[:search]}%")
+        @teams = if params[:search] != nil and params[:search].length > 0
+                    if(ActiveRecord::Base.connection.adapter_name == 'Mysql2' )
+                        Team.where('CAST(id as CHAR) like ? or lower(name) like lower(?)', "#{params[:search].to_i}%", "%#{params[:search]}%")
+                    else
+                        Team.where('id::text like ? or lower(name) like lower(?)', "#{params[:search].to_i}%", "%#{params[:search]}%")
+                    end
                 else
-                    Team.all
+                    # Team.where("blurb is not null").or Team.where("blurb is null")
+                    Team.all.order("blurb is null, id asc")
                 end
+
         @teams = @teams.paginate(:page => params[:page], :per_page => 30)
     end
 
@@ -23,7 +29,124 @@ class TeamsController < ApplicationController
             # render :search
             # return
         end
-        @competitions = LeagueMeetEvent.all.where("red1 = ? OR red2 = ? OR blue1 = ? OR blue2 = ?", @team.id, @team.id,@team.id,@team.id)
+        events = @team.data_competitions.split("|")
+        @competitions = []
+        for meet in events
+            @competitions.push(Event.find(meet.gsub("_","")))
+        end
+        @avgAuto = 0
+        @important = -1
+        if(@competitions.length != 0)
+            @competitions = @competitions.sort_by { |k,_| Date.strptime(k.date,"%m/%d/%Y") }.reverse
+            compet = []
+            @competitions.each do |com|
+                alldata = com.data_competition.split("|")
+                meetdat = []
+                meet = Hash.new
+                meet[:wins] = 0
+                meet[:draws] = 0
+                for c in alldata
+                    comp = c.split(",")
+                    if((","+ comp[1,6].join(",")+",").include?(",#{@team.id},"))
+                        # puts c
+                        dat = Hash.new
+                        dat[:name] = comp[0]
+                        if comp[3].to_i == 0
+                            dat[:redteam] = comp[1,2]
+                            dat[:blueteam] = comp[4,2]
+                            dat[:numteams] = 3
+                        else
+                            dat[:redteam] = comp[1,3]
+                            dat[:blueteam] = comp[4,3]
+                            dat[:numteams] = 2
+                        end
+                        if(com.advanceddata)
+                            #dat = "#{event.redscore},#{event.redauto},#{event.redteleop},#{event.redend},#{event.redpenalty}"
+                            dat[:reddetails] = comp[7,6].join(",")
+                            dat[:bluedetails] = comp[13,6].join(",")
+                            dat[:redscore] = comp[7]
+                            dat[:bluescore] = comp[13]
+                        else
+                            dat[:reddetails] = ""
+                            dat[:bluedetails] = ""
+                            dat[:redscore] = comp[7]
+                            dat[:bluescore] = comp[8]
+                        end
+
+                        if((","+ comp[1,3].join(",")+",").include?(",#{@team.id},"))
+                            # Red
+                            dat[:ownscore] = dat[:redscore]
+                            dat[:oppscore] = dat[:bluescore]
+                            dat[:owndetails] = dat[:reddetails]
+                            dat[:oppdetails] = dat[:bluedetails]
+                        else
+                            dat[:ownscore] = dat[:bluescore]
+                            dat[:oppscore] = dat[:redscore]
+                            dat[:owndetails] = dat[:bluedetails]
+                            dat[:oppdetails] = dat[:reddetails]
+                        end
+                        if dat[:ownscore].to_i > dat[:oppscore].to_i
+                            meet[:wins] += 1
+                        elsif dat[:ownscore].to_i == dat[:oppscore].to_i
+                            meet[:draws] += 1
+                        end
+                        meetdat.push(dat)
+                    end
+                end
+                allstats = com.data_stats.split("|")
+                for s in allstats
+                    spl = s.split(",")
+                    if(spl[0] == @team.id.to_s)
+                        meet[:rank] = spl[1]
+                        meet[:rank_all] = allstats.length
+                        break
+                    end
+                end
+                meet[:data] = meetdat
+                meet[:meet] = com
+                compet.push(meet)
+            end
+            @competitions = compet
+            # raise
+            @avgPreScore = 0
+
+
+            @avgTele = 0
+            @avgEnd = 0
+            @avgAuto = 0
+            @totalMatches = 0
+            @avgData = []
+            # More data analysis
+            @competitions.each_with_index do |meet,i|
+                # ONLY DETAILED DATA HAS IT
+                #dat = "#{event.redscore},#{event.redauto},#{event.redteleop},#{event.redend},#{event.redpenalty}"
+                @avgPreScore = 0
+                @avgTele = 0
+                @avgEnd = 0
+                @avgAuto = 0
+                @totalMatches = 0
+                meet[:data].each do |event|
+                    if(event[:owndetails].length > 0)
+                        det = event[:owndetails].split(",")
+                        @avgPreScore += event[:ownscore].to_i - det[5].to_i
+                        @avgTele += det[3].to_i
+                        @avgEnd += det[4].to_i
+                        @avgAuto += det[1].to_i
+                        @totalMatches += 1
+                        if(@important == -1)
+                            @important = i
+                        end
+                    end
+                end
+                if(@totalMatches > 0 )
+                    @avgTele /= @totalMatches
+                    @avgEnd /= @totalMatches
+                    @avgAuto /= @totalMatches
+                    @avgPreScore /= @totalMatches
+                end
+                @avgData.push([@totalMatches,@avgPreScore,@avgAuto,@avgTele,@avgEnd])
+            end
+        end
     end
 
     # GET /teams/new
@@ -34,7 +157,10 @@ class TeamsController < ApplicationController
     # GET /teams/1/plain
     # GET /teams/1.json/plain
     def plain
-        render layout: false
+        if params[:showlink]
+            @existssss = "HI"
+        end
+        render :partial => "plain"
         # render :layout => false
     end
 

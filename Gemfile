@@ -42,6 +42,9 @@ gem 'ruby-stemmer', '>=0.8.3', :require => 'lingua/stemmer'
 gem 'htmlentities'
 gem 'will_paginate', '~> 3.1.0'
 gem "font-awesome-rails"
+gem 'popupoverlay-rails'
+gem "chartkick"
+gem 'social-share-button'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-tether', '>= 1.1.0'

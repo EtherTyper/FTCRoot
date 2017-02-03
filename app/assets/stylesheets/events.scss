@@ -1,0 +1,22 @@
+// Place all the styles related to the Events controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+.teamred {
+    background-color:#FF9999 !important;
+    color:#333;
+}
+td a {
+    color:#116;
+    // text-decoration: underline;;
+}
+.teamblue {
+    background-color:#66A3FF !important;
+    color:#333;
+}
+.teamname {
+    font-size: 10px;
+    display: block;
+    white-space:nowrap;
+    padding-top: 0px;
+    margin: -5px;
+}

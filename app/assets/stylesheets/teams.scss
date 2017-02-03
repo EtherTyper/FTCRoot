@@ -3,12 +3,63 @@
 // You can use Sass (SCSS) here: http://sass-lang.com/
 table {
     width: 100%;
+    table-layout: fixed;
     // border: 1px solid black;
+}
+.overflow-big {
+
+    min-width: 800px;
+    overflow-x:scroll;
+}
+.overflow {
+    min-width: 600px;
+    overflow-x:scroll;
 }
 .centered tr {
     text-align: center;
 }
+.centered th, .centered td {
+    text-align: center;
+}
+td span{
+    overflow: hidden;
+}
+td,th  {
+    font-size: 0.85em !important;
+ } /* =14px */
+@media screen and (min-width:767px) {
 
+    tr:nth-child(even){background-color: #f2f2f2}
+}
+@media screen and (max-width: 767px){
+    td {
+        padding:  2px !important;
+    }
+}
+
+
+@media all and (max-width: 500px) {
+  .Rtable--collapse  {
+    display: block;
+    > .Rtable-cell { width: 100% !important; }
+    > .Rtable-cell--foot { margin-bottom: 1em; }
+  }
+}
+
+// Non-Flex modernizer fallback
+.no-flexbox .Rtable {
+  display: block;
+  > .Rtable-cell { width: 100%; }
+  > .Rtable-cell--foot { margin-bottom: 1em; }
+}
+
+
+
+.button-full {
+    // background: rgba(0,0,0,0) !important;
+    width: 100%;
+    height: 100%;
+}
 .button-secondary {
     background: rgb(66, 184, 221); /* this is a light blue */
     color: white;
@@ -27,4 +78,72 @@ table {
     color: white;
     border-radius: 4px;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+.button-purple {
+    background: rgb(150, 70, 150); /* this is a light blue */
+    color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+.full-width {
+    width: 100%;
+}
+.td-superimportant {
+    min-width: 300px;
+    width:50%;
+}
+.td-important {
+    min-width: 300px;
+    width:20%;
+}
+.td-meh {
+    // min-width: 30px;
+    width:10%;
+}
+.td-smeh {
+    min-width: 30px;
+    width:10%;
+}
+
+#score_popup {
+    border-style: solid;
+    border-width: 0.5px;
+    border-radius: 10px;
+    border-color: #000000;
+    background: #eeeeee;
+    padding: 12px;
+    width: 300px;
+    max-height: 604px;
+}
+.d-green {
+    color: #99FF99;
+}
+.d-red {
+    color: #FF6699;
+}
+
+
+.card {
+    /* Add shadows to create the "card" effect */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    border-radius: 5px; /* 5px rounded corners */
+}
+
+/* On mouse-over, add a deeper shadow */
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+/* Add some padding inside the card container */
+.card-container {
+    padding: 20px 16px;
+}
+.card-contact {
+    width:40%;
+    min-width:100px;
+    display: inline-block;
+}
+@media screen and (max-width: 767px){
+    .card-contact{ width:100%}
 }
